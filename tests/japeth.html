@@ -1,0 +1,22 @@
+<html>
+ <title>A unit test for Japeth</title>
+ <head>
+  <script type='text/javascript' src='./jsunit/app/jsUnitCore.js'></script>
+  <script type='text/javascript' src='../japeth.js'></script>
+  <script type='text/javascript'>
+
+    function setUp(){
+      // perform fixture set up
+    }
+    function tearDown() {
+      // clean up
+    }
+    function testOneThing(){
+      var uri = JAPETH.mkqueryuri('select ?s {?s a ?o}', 'mystore');
+      assertEquals('http://api.talis.com/stores/mystore/services/sparql?output=json&query=select%20%3Fs%20%7B%3Fs%20a%20%3Fo%7D', uri);
+    }
+
+  </script>
+ </head>
+ <body/>
+</html>
