@@ -1,0 +1,435 @@
+<html>
+ <head>
+  <title>Test Page for add(value1, value2)</title>
+  <script type="text/javascript" src="../lib/jsunit/app/jsUnitCore.js"></script>
+  <script type="text/javascript" src="../simplegraph.js"></script>
+ </head>
+ <body>
+    <script type="text/javascript">
+
+    function var_dump(obj) {
+      if(typeof obj == "object") {
+         return "Type: "+typeof(obj)+((obj.constructor) ? "\nConstructor: "+obj.constructor : "")+"\nValue: " + obj;
+      } else {
+         return "Type: "+typeof(obj)+"\nValue: "+obj;
+      }
+     }//end function var_dump
+
+
+    function count_index(index) {
+      var subj_count=0;
+      for(subj in index) subj_count++;
+      return subj_count;      
+    }
+    
+    function test_new_graph_is_empty() {
+      g = new Macavity.SimpleGraph();
+      assertEquals( 0, count_index(g.get_index()));
+    }
+      
+   
+    function test_add_resource_triple() {
+      g = new Macavity.SimpleGraph();
+      g.add_resource_triple('http://example.org/subj', 'http://example.org/pred', 'http://example.org/obj');
+      assertEquals( 1, count_index(g.get_index()));
+    }
+    
+    function test_add_resource_triple_sets_subject() {
+      g = new Macavity.SimpleGraph();
+      g.add_resource_triple('http://example.org/subj', 'http://example.org/pred', 'http://example.org/obj');
+
+      index = g.get_index();
+      assertNotNull( index['http://example.org/subj'] );
+    }    
+
+    function test_add_resource_triple_sets_property() {
+      g = new Macavity.SimpleGraph();
+      g.add_resource_triple('http://example.org/subj', 'http://example.org/pred', 'http://example.org/obj');
+
+      index = g.get_index();
+      assertNotNull( index['http://example.org/subj']['http://example.org/pred'] );
+    }  
+          
+    function test_add_resource_triple_sets_object_type() {
+      g = new Macavity.SimpleGraph();
+      g.add_resource_triple('http://example.org/subj', 'http://example.org/pred', 'http://example.org/obj');
+
+      index = g.get_index();
+      assertEquals( "uri", index['http://example.org/subj']['http://example.org/pred'][0]['type'] );
+    }  
+
+    function test_add_resource_triple_sets_object_value() {
+      g = new Macavity.SimpleGraph();
+      g.add_resource_triple('http://example.org/subj', 'http://example.org/pred', 'http://example.org/obj');
+
+      index = g.get_index();
+      assertEquals( "http://example.org/obj", index['http://example.org/subj']['http://example.org/pred'][0]['value'] );
+    }     
+
+    function test_add_second_resource_triple_with_same_subject_and_property() {
+      g = new Macavity.SimpleGraph();
+      g.add_resource_triple('http://example.org/subj', 'http://example.org/pred', 'http://example.org/obj');
+      g.add_resource_triple('http://example.org/subj', 'http://example.org/pred', 'http://example.org/obj2');
+
+      index = g.get_index();
+      assertEquals( "http://example.org/obj", index['http://example.org/subj']['http://example.org/pred'][0]['value'] );
+      assertEquals( "http://example.org/obj2", index['http://example.org/subj']['http://example.org/pred'][1]['value'] );
+    }  
+    
+    function test_add_second_resource_triple_with_same_subject_and_different_property() {
+      g = new Macavity.SimpleGraph();
+      g.add_resource_triple('http://example.org/subj', 'http://example.org/pred', 'http://example.org/obj');
+      g.add_resource_triple('http://example.org/subj', 'http://example.org/pred2', 'http://example.org/obj');
+
+      index = g.get_index();
+      assertEquals( "http://example.org/obj", index['http://example.org/subj']['http://example.org/pred'][0]['value'] );
+      assertEquals( "http://example.org/obj", index['http://example.org/subj']['http://example.org/pred2'][0]['value'] );
+    }     
+    
+    function test_add_resource_triple_ignores_duplicates() {
+      g = new Macavity.SimpleGraph();
+      g.add_resource_triple('http://example.org/subj', 'http://example.org/pred', 'http://example.org/obj');
+      g.add_resource_triple('http://example.org/subj', 'http://example.org/pred', 'http://example.org/obj');
+
+      this.assertEquals( 1, g.get_index()['http://example.org/subj']['http://example.org/pred'].length);
+    }    
+               
+    function test_add_resource_triple_accepts_bnode_subjects() {
+      g = new Macavity.SimpleGraph();
+      g.add_resource_triple('_:subj', 'http://example.org/pred', 'http://example.org/obj');
+      assertTrue( g.get_index().hasOwnProperty('_:subj'));
+    }       
+    
+    function test_add_resource_triple_accepts_bnode_objects() {
+      g = new Macavity.SimpleGraph();
+      g.add_resource_triple('http://example.org/subj', 'http://example.org/pred', '_:obj');
+      this.assertEquals( 1, g.get_index()['http://example.org/subj']['http://example.org/pred'].length);
+    }
+
+    function test_add_resource_triple_sets_bnode_object_type() {
+      g = new Macavity.SimpleGraph();
+      g.add_resource_triple('http://example.org/subj', 'http://example.org/pred', '_:obj');
+
+      assertEquals( "bnode", g.get_index()['http://example.org/subj']['http://example.org/pred'][0]['type'] );
+    }    
+    
+    function test_add_literal_triple() {
+      g = new Macavity.SimpleGraph();
+      g.add_literal_triple('http://example.org/subj', 'http://example.org/pred', 'literal');
+      this.assertEquals( 1, g.get_index()['http://example.org/subj']['http://example.org/pred'].length);
+    }    
+
+    function test_add_literal_triple_sets_object_type() {
+      g = new Macavity.SimpleGraph();
+      g.add_literal_triple('http://example.org/subj', 'http://example.org/pred', 'literal');
+
+      assertEquals( "literal", g.get_index()['http://example.org/subj']['http://example.org/pred'][0]['type'] );
+    }
+
+    function test_add_literal_triple_sets_object_language() {
+      g = new Macavity.SimpleGraph();
+      g.add_literal_triple('http://example.org/subj', 'http://example.org/pred', 'literal', 'en');
+
+      assertEquals( "en", g.get_index()['http://example.org/subj']['http://example.org/pred'][0]['lang'] );
+    }
+    function test_add_literal_triple_sets_object_datatype() {
+      g = new Macavity.SimpleGraph();
+      g.add_literal_triple('http://example.org/subj', 'http://example.org/pred', 'literal', '', 'http://example.org/type');
+
+      assertEquals( "http://example.org/type", g.get_index()['http://example.org/subj']['http://example.org/pred'][0]['datatype'] );
+    }
+
+    function test_add_resource_triple_ignores_duplicate_languages() {
+      g = new Macavity.SimpleGraph();
+      g.add_literal_triple('http://example.org/subj', 'http://example.org/pred', 'literal', 'en');
+      g.add_literal_triple('http://example.org/subj', 'http://example.org/pred', 'literal', 'de');
+      g.add_literal_triple('http://example.org/subj', 'http://example.org/pred', 'literal', 'en');
+
+      this.assertEquals( 2, g.get_index()['http://example.org/subj']['http://example.org/pred'].length);
+    }
+
+    function test_add_resource_triple_ignores_duplicate_datatypes() {
+      g = new Macavity.SimpleGraph();
+      g.add_literal_triple('http://example.org/subj', 'http://example.org/pred', 'literal', null, 'http://example.org/dt');
+      g.add_literal_triple('http://example.org/subj', 'http://example.org/pred', 'literal', null, 'http://example.org/dt2');
+      g.add_literal_triple('http://example.org/subj', 'http://example.org/pred', 'literal', null, 'http://example.org/dt');
+
+      assertEquals( 2, g.get_index()['http://example.org/subj']['http://example.org/pred'].length);
+    }
+    
+    function test_get_first_literal() {
+      g = new Macavity.SimpleGraph();
+      g.add_literal_triple('http://example.org/subj', 'http://example.org/pred', 'literal');
+
+      assertEquals( "literal", g.get_first_literal('http://example.org/subj', 'http://example.org/pred'));
+    }
+    function test_get_first_literal_ignores_resources() {
+      g = new Macavity.SimpleGraph();
+      g.add_resource_triple('http://example.org/subj', 'http://example.org/pred', 'http://example.org/obj');
+      g.add_literal_triple('http://example.org/subj', 'http://example.org/pred', 'literal');
+
+      assertEquals( "literal", g.get_first_literal('http://example.org/subj', 'http://example.org/pred'));
+    }   
+
+    function test_get_first_literal_uses_default() {
+      g = new Macavity.SimpleGraph();
+      g.add_literal_triple('http://example.org/subj', 'http://example.org/pred', 'literal');
+
+      assertEquals( "my default", g.get_first_literal('http://example.org/subj', 'http://example.org/bogus', 'my default'));
+    }     
+    
+    function test_remove_resource_triple() {
+      g = new Macavity.SimpleGraph();
+      g.add_resource_triple('http://example.org/subj', 'http://example.org/pred', 'http://example.org/obj');
+
+      assertEquals( 1, g.get_index()['http://example.org/subj']['http://example.org/pred'].length);
+
+      g.remove_resource_triple('http://example.org/subj', 'http://example.org/pred', 'http://example.org/obj');
+      assertFalse( g.get_index().hasOwnProperty('http://example.org/subj'));
+    } 
+    
+
+    function test_remove_triples_about() {
+      g = new Macavity.SimpleGraph();
+      g.add_resource_triple('http://example.org/subj', 'http://example.org/pred', 'http://example.org/obj');
+      g.add_literal_triple('http://example.org/subj', 'http://example.org/pred', 'literal');
+
+      g.remove_triples_about('http://example.org/subj');
+
+      assertFalse( g.get_index().hasOwnProperty('http://example.org/subj'));
+    }
+    
+    function test_remove_triples_about_affects_only_specified_subject() {
+      g = new Macavity.SimpleGraph();
+      g.add_resource_triple('http://example.org/subj', 'http://example.org/pred', 'http://example.org/obj');
+      g.add_literal_triple('http://example.org/subj2', 'http://example.org/pred', 'literal');
+
+      g.remove_triples_about('http://example.org/subj');
+
+      assertTrue( g.get_index().hasOwnProperty('http://example.org/subj2'));
+    }
+ 
+    function test_has_resource_triple() {
+      g = new Macavity.SimpleGraph();
+      g.add_resource_triple('http://example.org/subj1', 'http://example.org/pred1', 'http://example.org/obj1');
+
+      assertTrue( g.has_resource_triple('http://example.org/subj1', 'http://example.org/pred1', 'http://example.org/obj1'));
+      assertFalse( g.has_resource_triple('http://example.org/subj1', 'http://example.org/pred1', 'http://example.org/obj2'));
+    }
+
+    function test_has_literal_triple() {
+      g = new Macavity.SimpleGraph();
+      g.add_literal_triple('http://example.org/subj1', 'http://example.org/pred1', 'foo');
+
+      assertTrue( g.has_literal_triple('http://example.org/subj1', 'http://example.org/pred1', 'foo'));
+      assertFalse( g.has_literal_triple('http://example.org/subj1', 'http://example.org/pred1', 'bar'));
+    }
+
+    function test_has_literal_triple_compares_languages() {
+      g = new Macavity.SimpleGraph();
+      g.add_literal_triple('http://example.org/subj1', 'http://example.org/pred1', 'foo', 'en');
+
+      assertTrue( g.has_literal_triple('http://example.org/subj1', 'http://example.org/pred1', 'foo', 'en'));
+      assertFalse( g.has_literal_triple('http://example.org/subj1', 'http://example.org/pred1', 'foo', 'fr'));
+    }
+    
+    function test_has_literal_triple_compares_datatypes() {
+      g = new Macavity.SimpleGraph();
+      g.add_literal_triple('http://example.org/subj1', 'http://example.org/pred1', 'foo', null, 'http://example.org/type1');
+      assertTrue( g.has_literal_triple('http://example.org/subj1', 'http://example.org/pred1', 'foo', null, 'http://example.org/type1'));
+      assertFalse( g.has_literal_triple('http://example.org/subj1', 'http://example.org/pred1', 'foo', null, 'http://example.org/type2'));
+    }
+    
+    function test_get_first_resource() {
+      g = new Macavity.SimpleGraph();
+      g.add_resource_triple('http://example.org/subj', 'http://example.org/pred', 'http://example.org/obj');
+
+      assertEquals( "http://example.org/obj", g.get_first_resource('http://example.org/subj', 'http://example.org/pred'));
+    }
+    
+    function test_get_first_resource_ignores_literals() {
+      g = new Macavity.SimpleGraph();
+      g.add_resource_triple('http://example.org/subj', 'http://example.org/pred', 'http://example.org/obj');
+      g.add_literal_triple('http://example.org/subj', 'http://example.org/pred', 'literal');
+
+      assertEquals( "http://example.org/obj", g.get_first_resource('http://example.org/subj', 'http://example.org/pred'));
+    }   
+            
+    function test_remove_property_values() {
+      g = new Macavity.SimpleGraph();
+      g.add_resource_triple('http://example.org/subj', 'http://example.org/pred', 'http://example.org/obj');
+
+      assertTrue( g.get_index().hasOwnProperty('http://example.org/subj'));
+
+      g.remove_property_values('http://example.org/subj', 'http://example.org/pred');
+      assertFalse( g.get_index().hasOwnProperty('http://example.org/subj'));
+    }
+
+    function test_remove_property_values_removes_multiple_values() {
+      g = new Macavity.SimpleGraph();
+      g.add_resource_triple('http://example.org/subj', 'http://example.org/pred', 'http://example.org/obj');
+      g.add_resource_triple('http://example.org/subj', 'http://example.org/pred', 'http://example.org/obj2');
+      g.add_resource_triple('http://example.org/subj', 'http://example.org/pred', 'http://example.org/obj3');
+      g.add_resource_triple('http://example.org/subj', 'http://example.org/pred', 'http://example.org/obj4');
+      g.add_resource_triple('http://example.org/subj', 'http://example.org/pred', 'http://example.org/obj5');
+
+      this.assertEquals( 5, g.get_index()['http://example.org/subj']['http://example.org/pred'].length);
+
+      g.remove_property_values('http://example.org/subj', 'http://example.org/pred');
+      assertFalse( g.get_index().hasOwnProperty('http://example.org/subj'));
+    }
+            
+    function test_remove_property_values_ignores_unknown_properties() {
+      g = new Macavity.SimpleGraph();
+      g.add_resource_triple('http://example.org/subj', 'http://example.org/pred', 'http://example.org/obj');
+
+      this.assertEquals( 1, g.get_index()['http://example.org/subj']['http://example.org/pred'].length);
+
+      g.remove_property_values('http://example.org/subj', 'http://example.org/pred2');
+      this.assertEquals( 1, g.get_index()['http://example.org/subj']['http://example.org/pred'].length);
+    }
+
+    function test_remove_all_triples() {
+      g = new Macavity.SimpleGraph();
+      g.add_resource_triple('http://example.org/subj', 'http://example.org/pred', 'http://example.org/obj');
+      g.add_resource_triple('http://example.org/subj', 'http://example.org/pred', 'http://example.org/obj2');
+
+      g.remove_all_triples();
+      assertFalse( g.get_index().hasOwnProperty('http://example.org/subj'));
+    }    
+  
+    function test_is_empty() {
+      g = new Macavity.SimpleGraph();
+
+      assertTrue( g.is_empty() );
+      g.add_resource_triple('http://example.org/subj', 'http://example.org/pred1', 'http://example.org/obj1');
+
+      assertFalse( g.is_empty() );
+    }
+  
+    function test_from_json() {
+      var data = '{' + 
+         ' "http:\/\/iandavis.com\/blog" : {'+
+         ' "http:\/\/purl.org\/dc\/elements\/1.1\/title" : [ { "value" : "Internet Alchemy Weblog", "type" : "literal" } ],'+
+         ' "http:\/\/www.w3.org\/1999\/02\/22-rdf-syntax-ns#type" : [ { "value" : "http:\/\/xmlns.com\/foaf\/0.1\/Document", "type" : "uri" } ],'+
+         ' "http:\/\/www.w3.org\/2000\/01\/rdf-schema#seeAlso" : [ { "value" : "http:\/\/iandavis.com\/blog\/feed\/rdf", "type" : "uri" } ],'+
+         ' "http:\/\/www.w3.org\/2002\/07\/owl#sameAs" : [ { "value" : "http:\/\/internetalchemy.org\/", "type" : "uri" } ],'+
+         ' "http:\/\/xmlns.com\/foaf\/0.1\/maker" : [ { "value" : "http:\/\/iandavis.com\/id\/me", "type" : "uri" } ]'+
+        '} }';
+
+      g = new Macavity.SimpleGraph();
+      g.from_json( data );
+      assertEquals( "literal", g.get_index()['http://iandavis.com/blog']['http://purl.org/dc/elements/1.1/title'][0]['type'] );
+      assertEquals( "Internet Alchemy Weblog", g.get_index()['http://iandavis.com/blog']['http://purl.org/dc/elements/1.1/title'][0]['value'] );
+      assertEquals( "uri", g.get_index()['http://iandavis.com/blog']['http://xmlns.com/foaf/0.1/maker'][0]['type'] );
+      assertEquals( "http://iandavis.com/id/me", g.get_index()['http://iandavis.com/blog']['http://xmlns.com/foaf/0.1/maker'][0]['value'] );
+      
+      
+    }
+
+    function test_subject_exists() {
+      g = new Macavity.SimpleGraph();
+      assertFalse( g.subject_exists('http://example.org/subj') );
+      g.add_resource_triple('http://example.org/subj', 'http://example.org/pred1', 'http://example.org/obj1');
+      assertTrue( g.subject_exists('http://example.org/subj') );
+    }
+
+    function test_properties() {
+      g = new Macavity.SimpleGraph();
+      g.add_resource_triple('http://example.org/subj', 'http://example.org/pred', 'http://example.org/obj');
+      g.add_resource_triple('http://example.org/subj', 'http://example.org/pred2', 'http://example.org/obj2');
+      
+      p = g.properties('http://example.org/subj');
+      assertEquals(2, p.length);
+    }
+
+    function test_properties_ignores_duplicates() {
+      g = new Macavity.SimpleGraph();
+      g.add_resource_triple('http://example.org/subj', 'http://example.org/pred', 'http://example.org/obj');
+      g.add_resource_triple('http://example.org/subj', 'http://example.org/pred', 'http://example.org/obj2');
+      
+      p = g.properties('http://example.org/subj');
+      assertEquals(1, p.length);
+    }
+
+    function test_properties_is_empty_for_unknown_subject() {
+      g = new Macavity.SimpleGraph();
+      g.add_resource_triple('http://example.org/subj', 'http://example.org/pred', 'http://example.org/obj');
+      g.add_resource_triple('http://example.org/subj', 'http://example.org/pred', 'http://example.org/obj2');
+      
+      p = g.properties('http://example.org/subj2');
+      assertEquals(0, p.length);
+    }
+
+    function test_properties_restricts_to_given_subject() {
+      g = new Macavity.SimpleGraph();
+      g.add_resource_triple('http://example.org/subj', 'http://example.org/pred', 'http://example.org/obj');
+      g.add_resource_triple('http://example.org/subj2', 'http://example.org/pred', 'http://example.org/obj2');
+      
+      p = g.properties('http://example.org/subj');
+      assertEquals(1, p.length);
+    }
+
+    function test_subjects() {
+      g = new Macavity.SimpleGraph();
+      g.add_resource_triple('http://example.org/subj', 'http://example.org/pred', 'http://example.org/obj');
+      g.add_resource_triple('http://example.org/subj2', 'http://example.org/pred2', 'http://example.org/obj2');
+      
+      s = g.subjects();
+      assertEquals(2, s.length);
+    }
+
+    function test_subjects_ignores_duplicates() {
+      g = new Macavity.SimpleGraph();
+      g.add_resource_triple('http://example.org/subj', 'http://example.org/pred', 'http://example.org/obj');
+      g.add_resource_triple('http://example.org/subj', 'http://example.org/pred', 'http://example.org/obj2');
+      
+      s = g.subjects();
+      assertEquals(1, s.length);
+    }
+
+    function test_values() {
+      g = new Macavity.SimpleGraph();
+      g.add_resource_triple('http://example.org/subj', 'http://example.org/pred', 'http://example.org/obj');
+      g.add_resource_triple('http://example.org/subj', 'http://example.org/pred', 'http://example.org/obj2');
+      
+      vals = g.values('http://example.org/subj', 'http://example.org/pred');
+      assertEquals(2, vals.length);
+    }
+
+    function test_values_restricts_to_given_subject() {
+      g = new Macavity.SimpleGraph();
+      g.add_resource_triple('http://example.org/subj', 'http://example.org/pred', 'http://example.org/obj');
+      g.add_resource_triple('http://example.org/subj2', 'http://example.org/pred', 'http://example.org/obj2');
+      
+      vals = g.values('http://example.org/subj', 'http://example.org/pred');
+      assertEquals(1, vals.length);
+      assertEquals('uri', vals[0]['type']);
+      assertEquals('http://example.org/obj', vals[0]['value']);
+    }
+
+    function test_values_restricts_to_given_property() {
+      g = new Macavity.SimpleGraph();
+      g.add_resource_triple('http://example.org/subj', 'http://example.org/pred', 'http://example.org/obj');
+      g.add_resource_triple('http://example.org/subj', 'http://example.org/pred2', 'http://example.org/obj2');
+      
+      vals = g.values('http://example.org/subj', 'http://example.org/pred2');
+      assertEquals(1, vals.length);
+      assertEquals('uri', vals[0]['type']);
+      assertEquals('http://example.org/obj2', vals[0]['value']);
+    }
+
+    function test_values_is_empty_for_unknown_subject() {
+      g = new Macavity.SimpleGraph();
+      g.add_resource_triple('http://example.org/subj', 'http://example.org/pred', 'http://example.org/obj');
+      g.add_resource_triple('http://example.org/subj', 'http://example.org/pred', 'http://example.org/obj2');
+      
+      vals = g.values('http://example.org/subj2', 'http://example.org/pred2');
+      assertEquals(0, vals.length);
+    }
+
+  </script>
+  
+  
+ </body>
+</html>

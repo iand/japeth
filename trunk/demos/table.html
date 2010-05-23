@@ -1,0 +1,23 @@
+<html>
+ <title>Japeth Table Demo</title>
+ <head>
+<!--  <script type='text/javascript' src='../japeth.js'></script> -->
+ </head>
+
+
+
+
+ <body>
+<!--
+  <script type='text/javascript' src='../japeth.js'>{
+-->
+  <script type='text/javascript' src='http://api.talis.com/stores/iand-dev1/items/js/japeth.js'>{
+    q1 = 'select ?name {?s a <http://xmlns.com/foaf/0.1/Person> ; <http://xmlns.com/foaf/0.1/name> ?name}';
+    q2 = 'prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> prefix geo: <http://www.w3.org/2003/01/geo/wgs84_pos#> select ?airport ?country ?latitude ?longitude ?altitude { ?s geo:alt ?altitude ; geo:lat ?latitude; geo:long ?longitude; rdfs:label ?airport; <http://airports.dataincubator.org/schema/country> ?country_res. ?country_res rdfs:label ?country } limit 100';
+    data = JAPETH.q(q2, 'airports');
+    data.ul('foo1', '${airport} (lat/long: <strong>${latitude}/${longitude}</strong>)');
+    //data.table('foo2', 'My subjects');
+  }
+  </script>
+ </body>
+</html>
